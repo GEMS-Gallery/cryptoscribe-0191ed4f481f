@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await backend.addPost(categoryName, title, content, author);
         await renderPosts(categoryName);
 
-        newPostForm.style.display = 'none';
         document.getElementById('postTitle').value = '';
         document.getElementById('postContent').value = '';
         document.getElementById('postAuthor').value = '';

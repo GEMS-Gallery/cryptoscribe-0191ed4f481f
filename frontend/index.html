@@ -14,7 +14,7 @@
             line-height: 1.6;
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         header {
@@ -33,7 +33,12 @@
             display: flex;
             gap: 15px;
         }
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
         .categories {
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -58,13 +63,15 @@
             color: #777;
         }
         .new-post-form {
-            display: none;
-            margin-top: 20px;
+            flex: 0 0 300px;
             padding: 20px;
             background-color: #f0f0f0;
             border-radius: 5px;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
         }
-        .new-post-form input, .new-post-form textarea {
+        .new-post-form input, .new-post-form textarea, .new-post-form select {
             width: 100%;
             margin-bottom: 10px;
             padding: 5px;
@@ -75,6 +82,7 @@
             border: none;
             padding: 10px 20px;
             cursor: pointer;
+            width: 100%;
         }
         .posts {
             margin-top: 20px;
@@ -98,8 +106,7 @@
                 </svg>
             </div>
         </header>
-        <main>
-            <h2>Categories:</h2>
+        <div class="main-content">
             <div class="categories" id="categories"></div>
             <div class="new-post-form" id="newPostForm">
                 <h3>Create New Post</h3>
@@ -109,7 +116,7 @@
                 <input type="text" id="postAuthor" placeholder="Author">
                 <button id="submitPost">Submit Post</button>
             </div>
-        </main>
+        </div>
         <footer>
             <p>&lt;/&gt; with ♥ by h4ck3rs, for h4ck3rs</p>
         </footer>

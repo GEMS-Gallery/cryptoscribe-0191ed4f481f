@@ -6,6 +6,7 @@ import Text "mo:base/Text";
 import Array "mo:base/Array";
 import List "mo:base/List";
 import Time "mo:base/Time";
+import Principal "mo:base/Principal";
 
 actor {
   public type Category = {
@@ -18,7 +19,7 @@ actor {
     categoryName: Text;
     title: Text;
     content: Text;
-    author: Text;
+    author: Principal;
     timestamp: Int;
   };
 
@@ -26,7 +27,8 @@ actor {
   stable var posts : List.List<Post> = List.nil();
   stable var nextPostId : Nat = 0;
 
-  public func addCategory(name: Text, description: Text) : async () {
+  public shared(msg) func addCategory(name: Text, description: Text) : async () {
+    assert(not Principal.isAnonymous(msg.caller));
     let newCategory : Category = {
       name = name;
       description = description;
@@ -38,13 +40,14 @@ actor {
     List.toArray(categories)
   };
 
-  public func addPost(categoryName: Text, title: Text, content: Text, author: Text) : async () {
+  public shared(msg) func addPost(categoryName: Text, title: Text, content: Text) : async () {
+    assert(not Principal.isAnonymous(msg.caller));
     let newPost : Post = {
       id = nextPostId;
       categoryName = categoryName;
       title = title;
       content = content;
-      author = author;
+      author = msg.caller;
       timestamp = Time.now();
     };
     posts := List.push(newPost, posts);
@@ -55,7 +58,8 @@ actor {
     List.toArray(List.filter(posts, func (p: Post) : Bool { p.categoryName == categoryName }))
   };
 
-  public func initializeCategories() : async () {
+  public shared(msg) func initializeCategories() : async () {
+    assert(not Principal.isAnonymous(msg.caller));
     let defaultCategories = [
       { name = "Red Team"; description = "Offensive security techniques and strategies" },
       { name = "Penetration Testing"; description = "Methods for testing system vulnerabilities" },
@@ -68,5 +72,9 @@ actor {
     for (category in defaultCategories.vals()) {
       await addCategory(category.name, category.description);
     };
+  };
+
+  public shared(msg) func whoami() : async Principal {
+    return msg.caller;
   };
 }

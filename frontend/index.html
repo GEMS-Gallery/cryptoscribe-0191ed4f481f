@@ -131,6 +131,21 @@
                 grid-template-columns: 1fr;
             }
         }
+        #loginButton, #logoutButton {
+            background-color: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #loginButton:hover, #logoutButton:hover {
+            background-color: #00ff00;
+            color: #333;
+        }
+        #userInfo {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -138,6 +153,9 @@
         <header>
             <h1>H4ck3r F0rum</h1>
             <div class="header-icons">
+                <button id="loginButton">Login</button>
+                <button id="logoutButton" style="display: none;">Logout</button>
+                <span id="userInfo"></span>
                 <svg id="newPostIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -155,7 +173,6 @@
                 <select id="categorySelect"></select>
                 <input type="text" id="postTitle" placeholder="Title">
                 <textarea id="postContent" placeholder="Content"></textarea>
-                <input type="text" id="postAuthor" placeholder="Author">
                 <button id="submitPost">Submit Post</button>
             </div>
         </div>

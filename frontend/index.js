@@ -1,6 +1,65 @@
 import { backend } from 'declarations/backend';
+import { AuthClient } from "@dfinity/auth-client";
+import { Principal } from "@dfinity/principal";
 
 let currentView = 'list';
+let authClient;
+let identity = null;
+
+async function initAuth() {
+    authClient = await AuthClient.create();
+    if (await authClient.isAuthenticated()) {
+        handleAuthenticated(authClient);
+    }
+}
+
+async function login() {
+    authClient.login({
+        identityProvider: "https://identity.ic0.app/#authorize",
+        onSuccess: () => {
+            handleAuthenticated(authClient);
+        }
+    });
+}
+
+async function logout() {
+    await authClient.logout();
+    identity = null;
+    updateLoginStatus();
+    hideNewPostForm();
+}
+
+async function handleAuthenticated(authClient) {
+    identity = authClient.getIdentity();
+    updateLoginStatus();
+    showNewPostForm();
+    const principal = await backend.whoami();
+    console.log("Logged in with principal:", principal.toText());
+}
+
+function updateLoginStatus() {
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const userInfo = document.getElementById('userInfo');
+
+    if (identity) {
+        loginButton.style.display = 'none';
+        logoutButton.style.display = 'inline-block';
+        userInfo.textContent = `Logged in as: ${identity.getPrincipal().toText().slice(0, 5)}...`;
+    } else {
+        loginButton.style.display = 'inline-block';
+        logoutButton.style.display = 'none';
+        userInfo.textContent = '';
+    }
+}
+
+function showNewPostForm() {
+    document.getElementById('newPostForm').style.display = 'block';
+}
+
+function hideNewPostForm() {
+    document.getElementById('newPostForm').style.display = 'none';
+}
 
 async function renderCategories() {
     const categoriesContainer = document.getElementById('categories');
@@ -41,7 +100,7 @@ async function renderPosts(categoryName) {
         postElement.innerHTML = `
             <h4>${post.title}</h4>
             <p>${post.content}</p>
-            <small>By ${post.author} on ${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</small>
+            <small>By ${post.author.toText().slice(0, 5)}... on ${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</small>
         `;
         postsContainer.appendChild(postElement);
     });
@@ -66,6 +125,7 @@ function setView(view) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await initAuth();
     await backend.initializeCategories();
     
     const savedView = localStorage.getItem('currentView');
@@ -82,25 +142,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const submitPostButton = document.getElementById('submitPost');
     const listViewBtn = document.getElementById('listViewBtn');
     const gridViewBtn = document.getElementById('gridViewBtn');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
 
     newPostIcon.addEventListener('click', () => {
-        newPostForm.style.display = newPostForm.style.display === 'none' ? 'block' : 'none';
+        if (identity) {
+            newPostForm.style.display = newPostForm.style.display === 'none' ? 'block' : 'none';
+        } else {
+            alert('Please login to create a new post.');
+        }
     });
 
     submitPostButton.addEventListener('click', async () => {
+        if (!identity) {
+            alert('Please login to create a new post.');
+            return;
+        }
         const categoryName = document.getElementById('categorySelect').value;
         const title = document.getElementById('postTitle').value;
         const content = document.getElementById('postContent').value;
-        const author = document.getElementById('postAuthor').value;
 
-        await backend.addPost(categoryName, title, content, author);
+        await backend.addPost(categoryName, title, content);
         await renderPosts(categoryName);
 
         document.getElementById('postTitle').value = '';
         document.getElementById('postContent').value = '';
-        document.getElementById('postAuthor').value = '';
     });
 
     listViewBtn.addEventListener('click', () => setView('list'));
     gridViewBtn.addEventListener('click', () => setView('grid'));
+    loginButton.addEventListener('click', login);
+    logoutButton.addEventListener('click', logout);
 });

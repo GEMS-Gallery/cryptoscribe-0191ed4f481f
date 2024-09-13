@@ -49,11 +49,18 @@ async function renderPosts(categoryName) {
 
 function setView(view) {
     const container = document.querySelector('.container');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    
     currentView = view;
     if (view === 'grid') {
         container.classList.add('grid-view');
+        gridViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
     } else {
         container.classList.remove('grid-view');
+        listViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
     }
     localStorage.setItem('currentView', view);
 }
@@ -64,6 +71,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savedView = localStorage.getItem('currentView');
     if (savedView) {
         setView(savedView);
+    } else {
+        setView('list');
     }
     
     await renderCategories();

@@ -1,15 +1,16 @@
 import { backend } from 'declarations/backend';
 import { AuthClient } from "@dfinity/auth-client";
-import { Principal } from "@dfinity/principal";
+import { HttpAgent } from "@dfinity/agent";
 
 let currentView = 'list';
 let authClient;
 let identity = null;
+let agent;
 
 async function initAuth() {
     authClient = await AuthClient.create();
     if (await authClient.isAuthenticated()) {
-        handleAuthenticated(authClient);
+        await handleAuthenticated();
     } else {
         await loadCategories();
     }
@@ -18,21 +19,21 @@ async function initAuth() {
 async function login() {
     authClient.login({
         identityProvider: "https://identity.ic0.app/#authorize",
-        onSuccess: () => {
-            handleAuthenticated(authClient);
-        }
+        onSuccess: handleAuthenticated,
     });
 }
 
 async function logout() {
     await authClient.logout();
     identity = null;
+    agent = null;
     updateLoginStatus();
     hideNewPostForm();
 }
 
-async function handleAuthenticated(authClient) {
-    identity = authClient.getIdentity();
+async function handleAuthenticated() {
+    identity = await authClient.getIdentity();
+    agent = new HttpAgent({ identity });
     updateLoginStatus();
     showNewPostForm();
     const principal = await backend.whoami();
@@ -188,8 +189,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const errorMessage = document.getElementById('errorMessage');
 
         try {
-            const result = await backend.addPost(categoryName, title, content);
-            if (result.ok) {
+            const authenticatedBackend = backend.createActor(backend.canisterId, {
+                agentOptions: {
+                    identity,
+                },
+            });
+            const result = await authenticatedBackend.addPost(categoryName, title, content);
+            if ('ok' in result) {
                 await renderPosts(categoryName);
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';

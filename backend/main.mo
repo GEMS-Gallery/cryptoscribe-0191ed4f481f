@@ -1,7 +1,6 @@
 import Bool "mo:base/Bool";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
-import Result "mo:base/Result";
 import Text "mo:base/Text";
 
 import Array "mo:base/Array";
@@ -9,6 +8,7 @@ import List "mo:base/List";
 import Time "mo:base/Time";
 import Principal "mo:base/Principal";
 import Debug "mo:base/Debug";
+import Result "mo:base/Result";
 
 actor {
   public type Category = {
@@ -43,6 +43,7 @@ actor {
   };
 
   public shared(msg) func addPost(categoryName: Text, title: Text, content: Text) : async Result.Result<(), Text> {
+    Debug.print("Caller principal: " # Principal.toText(msg.caller));
     if (Principal.isAnonymous(msg.caller)) {
       Debug.print("Anonymous user tried to add a post");
       return #err("User must be authenticated to add a post");
@@ -58,6 +59,7 @@ actor {
     };
     posts := List.push(newPost, posts);
     nextPostId += 1;
+    Debug.print("Post added successfully");
     #ok()
   };
 
@@ -83,6 +85,7 @@ actor {
   };
 
   public shared(msg) func whoami() : async Principal {
+    Debug.print("Whoami called by: " # Principal.toText(msg.caller));
     return msg.caller;
   };
 }

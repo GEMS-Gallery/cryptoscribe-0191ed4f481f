@@ -57,6 +57,34 @@
             text-align: center;
             color: #777;
         }
+        .new-post-form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .new-post-form input, .new-post-form textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .new-post-form button {
+            background-color: #00ff00;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .posts {
+            margin-top: 20px;
+        }
+        .post {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -64,19 +92,23 @@
         <header>
             <h1>H4ck3r F0rum</h1>
             <div class="header-icons">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg id="newPostIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="4 17 10 11 4 5"></polyline>
-                    <line x1="12" y1="19" x2="20" y2="19"></line>
                 </svg>
             </div>
         </header>
         <main>
             <h2>Categories:</h2>
             <div class="categories" id="categories"></div>
+            <div class="new-post-form" id="newPostForm">
+                <h3>Create New Post</h3>
+                <select id="categorySelect"></select>
+                <input type="text" id="postTitle" placeholder="Title">
+                <textarea id="postContent" placeholder="Content"></textarea>
+                <input type="text" id="postAuthor" placeholder="Author">
+                <button id="submitPost">Submit Post</button>
+            </div>
         </main>
         <footer>
             <p>&lt;/&gt; with ♥ by h4ck3rs, for h4ck3rs</p>

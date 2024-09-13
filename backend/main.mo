@@ -1,20 +1,31 @@
-import Func "mo:base/Func";
+import Bool "mo:base/Bool";
+import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 
 import Array "mo:base/Array";
 import List "mo:base/List";
+import Time "mo:base/Time";
 
 actor {
-  // Define the Category structure
   public type Category = {
     name: Text;
     description: Text;
   };
 
-  // Use a stable variable to store categories
-  stable var categories : List.List<Category> = List.nil();
+  public type Post = {
+    id: Nat;
+    categoryName: Text;
+    title: Text;
+    content: Text;
+    author: Text;
+    timestamp: Int;
+  };
 
-  // Function to add a new category
+  stable var categories : List.List<Category> = List.nil();
+  stable var posts : List.List<Post> = List.nil();
+  stable var nextPostId : Nat = 0;
+
   public func addCategory(name: Text, description: Text) : async () {
     let newCategory : Category = {
       name = name;
@@ -23,12 +34,27 @@ actor {
     categories := List.push(newCategory, categories);
   };
 
-  // Function to get all categories
   public query func getCategories() : async [Category] {
     List.toArray(categories)
   };
 
-  // Initialize with default categories
+  public func addPost(categoryName: Text, title: Text, content: Text, author: Text) : async () {
+    let newPost : Post = {
+      id = nextPostId;
+      categoryName = categoryName;
+      title = title;
+      content = content;
+      author = author;
+      timestamp = Time.now();
+    };
+    posts := List.push(newPost, posts);
+    nextPostId += 1;
+  };
+
+  public query func getPosts(categoryName: Text) : async [Post] {
+    List.toArray(List.filter(posts, func (p: Post) : Bool { p.categoryName == categoryName }))
+  };
+
   public func initializeCategories() : async () {
     let defaultCategories = [
       { name = "Red Team"; description = "Offensive security techniques and strategies" },

@@ -34,6 +34,8 @@ async function logout() {
 async function handleAuthenticated() {
     identity = await authClient.getIdentity();
     agent = new HttpAgent({ identity });
+    await agent.fetchRootKey();
+    backend.setAgent(agent);
     updateLoginStatus();
     showNewPostForm();
     const principal = await backend.whoami();
@@ -189,12 +191,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const errorMessage = document.getElementById('errorMessage');
 
         try {
-            const authenticatedBackend = backend.createActor(backend.canisterId, {
-                agentOptions: {
-                    identity,
-                },
-            });
-            const result = await authenticatedBackend.addPost(categoryName, title, content);
+            const result = await backend.addPost(categoryName, title, content);
             if ('ok' in result) {
                 await renderPosts(categoryName);
                 document.getElementById('postTitle').value = '';

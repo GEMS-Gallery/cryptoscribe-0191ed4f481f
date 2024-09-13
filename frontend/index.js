@@ -1,5 +1,7 @@
 import { backend } from 'declarations/backend';
 
+let currentView = 'list';
+
 async function renderCategories() {
     const categoriesContainer = document.getElementById('categories');
     const categorySelect = document.getElementById('categorySelect');
@@ -45,13 +47,32 @@ async function renderPosts(categoryName) {
     });
 }
 
+function setView(view) {
+    const container = document.querySelector('.container');
+    currentView = view;
+    if (view === 'grid') {
+        container.classList.add('grid-view');
+    } else {
+        container.classList.remove('grid-view');
+    }
+    localStorage.setItem('currentView', view);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await backend.initializeCategories();
+    
+    const savedView = localStorage.getItem('currentView');
+    if (savedView) {
+        setView(savedView);
+    }
+    
     await renderCategories();
 
     const newPostIcon = document.getElementById('newPostIcon');
     const newPostForm = document.getElementById('newPostForm');
     const submitPostButton = document.getElementById('submitPost');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const gridViewBtn = document.getElementById('gridViewBtn');
 
     newPostIcon.addEventListener('click', () => {
         newPostForm.style.display = newPostForm.style.display === 'none' ? 'block' : 'none';
@@ -70,4 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('postContent').value = '';
         document.getElementById('postAuthor').value = '';
     });
+
+    listViewBtn.addEventListener('click', () => setView('list'));
+    gridViewBtn.addEventListener('click', () => setView('grid'));
 });

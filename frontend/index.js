@@ -3,6 +3,8 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from 'declarations/backend';
 
+const BACKEND_CANISTER_ID = import.meta.env.VITE_BACKEND_CANISTER_ID;
+
 let currentView = 'list';
 let authClient;
 let identity = null;
@@ -39,7 +41,11 @@ async function handleAuthenticated() {
     identity = await authClient.getIdentity();
     agent = new HttpAgent({ identity });
     await agent.fetchRootKey();
-    authenticatedActor = createActor(process.env.BACKEND_CANISTER_ID, {
+    if (!BACKEND_CANISTER_ID) {
+        console.error("Backend canister ID is not set. Please check your environment variables.");
+        return;
+    }
+    authenticatedActor = createActor(BACKEND_CANISTER_ID, {
         agent,
     });
     updateLoginStatus();

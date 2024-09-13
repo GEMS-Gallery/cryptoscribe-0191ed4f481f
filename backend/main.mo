@@ -1,41 +1,46 @@
 import Func "mo:base/Func";
-import Int "mo:base/Int";
 import Text "mo:base/Text";
 
 import Array "mo:base/Array";
-import Time "mo:base/Time";
 import List "mo:base/List";
 
 actor {
-  // Define the Post structure
-  public type Post = {
-    title: Text;
-    body: Text;
-    author: Text;
-    timestamp: Int;
+  // Define the Category structure
+  public type Category = {
+    name: Text;
+    description: Text;
   };
 
-  // Use a stable variable to store posts
-  stable var posts : List.List<Post> = List.nil();
+  // Use a stable variable to store categories
+  stable var categories : List.List<Category> = List.nil();
 
-  // Function to add a new post
-  public func addPost(title: Text, body: Text, author: Text) : async () {
-    let newPost : Post = {
-      title = title;
-      body = body;
-      author = author;
-      timestamp = Time.now();
+  // Function to add a new category
+  public func addCategory(name: Text, description: Text) : async () {
+    let newCategory : Category = {
+      name = name;
+      description = description;
     };
-    posts := List.push(newPost, posts);
+    categories := List.push(newCategory, categories);
   };
 
-  // Function to get all posts, sorted by timestamp (most recent first)
-  public query func getPosts() : async [Post] {
-    let postArray = List.toArray(posts);
-    Array.sort(postArray, func(a: Post, b: Post) : { #less; #equal; #greater } {
-      if (a.timestamp > b.timestamp) { #less }
-      else if (a.timestamp < b.timestamp) { #greater }
-      else { #equal }
-    })
+  // Function to get all categories
+  public query func getCategories() : async [Category] {
+    List.toArray(categories)
+  };
+
+  // Initialize with default categories
+  public func initializeCategories() : async () {
+    let defaultCategories = [
+      { name = "Red Team"; description = "Offensive security techniques and strategies" },
+      { name = "Penetration Testing"; description = "Methods for testing system vulnerabilities" },
+      { name = "Exploit Development"; description = "Creating and sharing new exploits" },
+      { name = "Cryptography"; description = "Encryption, decryption, and secure communication" },
+      { name = "Social Engineering"; description = "Psychological manipulation tactics" },
+      { name = "Malware Analysis"; description = "Studying and reverse engineering malicious software" },
+    ];
+
+    for (category in defaultCategories.vals()) {
+      await addCategory(category.name, category.description);
+    };
   };
 }

@@ -1,11 +1,10 @@
-type Post = 
+type Category = 
  record {
-   author: text;
-   body: text;
-   timestamp: int;
-   title: text;
+   description: text;
+   name: text;
  };
 service : {
-  addPost: (text, text, text) -> ();
-  getPosts: () -> (vec Post) query;
+  addCategory: (text, text) -> ();
+  getCategories: () -> (vec Category) query;
+  initializeCategories: () -> ();
 }

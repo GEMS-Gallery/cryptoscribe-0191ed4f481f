@@ -1,13 +1,9 @@
 export const idlFactory = ({ IDL }) => {
-  const Post = IDL.Record({
-    'title' : IDL.Text,
-    'body' : IDL.Text,
-    'author' : IDL.Text,
-    'timestamp' : IDL.Int,
-  });
+  const Category = IDL.Record({ 'name' : IDL.Text, 'description' : IDL.Text });
   return IDL.Service({
-    'addPost' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-    'getPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+    'addCategory' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+    'initializeCategories' : IDL.Func([], [], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

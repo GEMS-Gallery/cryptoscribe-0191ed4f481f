@@ -1,11 +1,13 @@
 import { backend } from 'declarations/backend';
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
+import { createActor } from 'declarations/backend';
 
 let currentView = 'list';
 let authClient;
 let identity = null;
 let agent;
+let authenticatedActor;
 
 async function initAuth() {
     authClient = await AuthClient.create();
@@ -27,18 +29,22 @@ async function logout() {
     await authClient.logout();
     identity = null;
     agent = null;
+    authenticatedActor = null;
     updateLoginStatus();
     hideNewPostForm();
+    await loadCategories();
 }
 
 async function handleAuthenticated() {
     identity = await authClient.getIdentity();
     agent = new HttpAgent({ identity });
     await agent.fetchRootKey();
-    backend.setAgent(agent);
+    authenticatedActor = createActor(process.env.BACKEND_CANISTER_ID, {
+        agent,
+    });
     updateLoginStatus();
     showNewPostForm();
-    const principal = await backend.whoami();
+    const principal = await authenticatedActor.whoami();
     console.log("Logged in with principal:", principal.toText());
     await initializeCategories();
     await loadCategories();
@@ -73,7 +79,7 @@ function hideNewPostForm() {
 
 async function initializeCategories() {
     try {
-        await backend.initializeCategories();
+        await (authenticatedActor || backend).initializeCategories();
     } catch (error) {
         console.error("Error initializing categories:", error);
     }
@@ -90,7 +96,14 @@ async function loadCategories() {
 async function renderCategories() {
     const categoriesContainer = document.getElementById('categories');
     const categorySelect = document.getElementById('categorySelect');
-    const categories = await backend.getCategories();
+    let categories;
+    try {
+        categories = await (authenticatedActor || backend).getCategories();
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        categoriesContainer.innerHTML = '<p>Error loading categories. Please try again later.</p>';
+        return;
+    }
     
     categoriesContainer.innerHTML = '';
     categorySelect.innerHTML = '';
@@ -117,7 +130,7 @@ async function renderCategories() {
 async function renderPosts(categoryName) {
     try {
         const postsContainer = document.getElementById(`posts-${categoryName}`);
-        const posts = await backend.getPosts(categoryName);
+        const posts = await (authenticatedActor || backend).getPosts(categoryName);
         
         postsContainer.innerHTML = '';
         
@@ -191,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const errorMessage = document.getElementById('errorMessage');
 
         try {
-            const result = await backend.addPost(categoryName, title, content);
+            const result = await authenticatedActor.addPost(categoryName, title, content);
             if ('ok' in result) {
                 await renderPosts(categoryName);
                 document.getElementById('postTitle').value = '';

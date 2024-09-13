@@ -3,7 +3,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from 'declarations/backend';
 
-const BACKEND_CANISTER_ID = import.meta.env.VITE_BACKEND_CANISTER_ID;
+const BACKEND_CANISTER_ID = import.meta.env.VITE_BACKEND_CANISTER_ID || process.env.BACKEND_CANISTER_ID;
 
 let currentView = 'list';
 let authClient;
@@ -43,6 +43,7 @@ async function handleAuthenticated() {
     await agent.fetchRootKey();
     if (!BACKEND_CANISTER_ID) {
         console.error("Backend canister ID is not set. Please check your environment variables.");
+        document.getElementById('errorMessage').textContent = "Configuration error. Please contact support.";
         return;
     }
     authenticatedActor = createActor(BACKEND_CANISTER_ID, {
@@ -50,8 +51,12 @@ async function handleAuthenticated() {
     });
     updateLoginStatus();
     showNewPostForm();
-    const principal = await authenticatedActor.whoami();
-    console.log("Logged in with principal:", principal.toText());
+    try {
+        const principal = await authenticatedActor.whoami();
+        console.log("Logged in with principal:", principal.toText());
+    } catch (error) {
+        console.error("Error getting principal:", error);
+    }
     await initializeCategories();
     await loadCategories();
 }
@@ -96,6 +101,7 @@ async function loadCategories() {
         await renderCategories();
     } catch (error) {
         console.error("Error loading categories:", error);
+        document.getElementById('categories').innerHTML = '<p>Error loading categories. Please try again later.</p>';
     }
 }
 

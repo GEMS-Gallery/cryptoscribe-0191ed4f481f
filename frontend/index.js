@@ -185,16 +185,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const categoryName = document.getElementById('categorySelect').value;
         const title = document.getElementById('postTitle').value;
         const content = document.getElementById('postContent').value;
+        const errorMessage = document.getElementById('errorMessage');
 
         try {
-            await backend.addPost(categoryName, title, content);
-            await renderPosts(categoryName);
-
-            document.getElementById('postTitle').value = '';
-            document.getElementById('postContent').value = '';
+            const result = await backend.addPost(categoryName, title, content);
+            if (result.ok) {
+                await renderPosts(categoryName);
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                errorMessage.textContent = '';
+            } else {
+                errorMessage.textContent = `Error: ${result.err}`;
+            }
         } catch (error) {
             console.error("Error adding post:", error);
-            alert("Failed to add post. Please try again.");
+            errorMessage.textContent = "Failed to add post. Please try again.";
         }
     });
 

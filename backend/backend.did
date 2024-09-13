@@ -1,3 +1,8 @@
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
 type Post = 
  record {
    author: principal;
@@ -14,7 +19,7 @@ type Category =
  };
 service : {
   addCategory: (text, text) -> ();
-  addPost: (text, text, text) -> ();
+  addPost: (text, text, text) -> (Result);
   getCategories: () -> (vec Category) query;
   getPosts: (text) -> (vec Post) query;
   initializeCategories: () -> ();

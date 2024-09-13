@@ -11,9 +11,11 @@ export interface Post {
   'author' : Principal,
   'timestamp' : bigint,
 }
+export type Result = { 'ok' : null } |
+  { 'err' : string };
 export interface _SERVICE {
   'addCategory' : ActorMethod<[string, string], undefined>,
-  'addPost' : ActorMethod<[string, string, string], undefined>,
+  'addPost' : ActorMethod<[string, string, string], Result>,
   'getCategories' : ActorMethod<[], Array<Category>>,
   'getPosts' : ActorMethod<[string], Array<Post>>,
   'initializeCategories' : ActorMethod<[], undefined>,

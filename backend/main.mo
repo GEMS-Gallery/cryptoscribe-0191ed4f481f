@@ -1,12 +1,14 @@
 import Bool "mo:base/Bool";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
+import Result "mo:base/Result";
 import Text "mo:base/Text";
 
 import Array "mo:base/Array";
 import List "mo:base/List";
 import Time "mo:base/Time";
 import Principal "mo:base/Principal";
+import Debug "mo:base/Debug";
 
 actor {
   public type Category = {
@@ -40,8 +42,12 @@ actor {
     List.toArray(categories)
   };
 
-  public shared(msg) func addPost(categoryName: Text, title: Text, content: Text) : async () {
-    assert(not Principal.isAnonymous(msg.caller));
+  public shared(msg) func addPost(categoryName: Text, title: Text, content: Text) : async Result.Result<(), Text> {
+    if (Principal.isAnonymous(msg.caller)) {
+      Debug.print("Anonymous user tried to add a post");
+      return #err("User must be authenticated to add a post");
+    };
+    
     let newPost : Post = {
       id = nextPostId;
       categoryName = categoryName;
@@ -52,6 +58,7 @@ actor {
     };
     posts := List.push(newPost, posts);
     nextPostId += 1;
+    #ok()
   };
 
   public query func getPosts(categoryName: Text) : async [Post] {

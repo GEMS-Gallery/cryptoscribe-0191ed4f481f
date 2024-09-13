@@ -58,19 +58,20 @@ actor {
     List.toArray(List.filter(posts, func (p: Post) : Bool { p.categoryName == categoryName }))
   };
 
-  public shared(msg) func initializeCategories() : async () {
-    assert(not Principal.isAnonymous(msg.caller));
-    let defaultCategories = [
-      { name = "Red Team"; description = "Offensive security techniques and strategies" },
-      { name = "Penetration Testing"; description = "Methods for testing system vulnerabilities" },
-      { name = "Exploit Development"; description = "Creating and sharing new exploits" },
-      { name = "Cryptography"; description = "Encryption, decryption, and secure communication" },
-      { name = "Social Engineering"; description = "Psychological manipulation tactics" },
-      { name = "Malware Analysis"; description = "Studying and reverse engineering malicious software" },
-    ];
+  public func initializeCategories() : async () {
+    if (List.isNil(categories)) {
+      let defaultCategories = [
+        { name = "Red Team"; description = "Offensive security techniques and strategies" },
+        { name = "Penetration Testing"; description = "Methods for testing system vulnerabilities" },
+        { name = "Exploit Development"; description = "Creating and sharing new exploits" },
+        { name = "Cryptography"; description = "Encryption, decryption, and secure communication" },
+        { name = "Social Engineering"; description = "Psychological manipulation tactics" },
+        { name = "Malware Analysis"; description = "Studying and reverse engineering malicious software" },
+      ];
 
-    for (category in defaultCategories.vals()) {
-      await addCategory(category.name, category.description);
+      for (category in defaultCategories.vals()) {
+        categories := List.push(category, categories);
+      };
     };
   };
 

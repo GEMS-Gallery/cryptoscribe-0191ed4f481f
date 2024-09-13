@@ -10,6 +10,8 @@ async function initAuth() {
     authClient = await AuthClient.create();
     if (await authClient.isAuthenticated()) {
         handleAuthenticated(authClient);
+    } else {
+        await loadCategories();
     }
 }
 
@@ -35,21 +37,26 @@ async function handleAuthenticated(authClient) {
     showNewPostForm();
     const principal = await backend.whoami();
     console.log("Logged in with principal:", principal.toText());
+    await initializeCategories();
+    await loadCategories();
 }
 
 function updateLoginStatus() {
     const loginButton = document.getElementById('loginButton');
     const logoutButton = document.getElementById('logoutButton');
     const userInfo = document.getElementById('userInfo');
+    const newPostIcon = document.getElementById('newPostIcon');
 
     if (identity) {
         loginButton.style.display = 'none';
         logoutButton.style.display = 'inline-block';
         userInfo.textContent = `Logged in as: ${identity.getPrincipal().toText().slice(0, 5)}...`;
+        newPostIcon.style.display = 'inline-block';
     } else {
         loginButton.style.display = 'inline-block';
         logoutButton.style.display = 'none';
         userInfo.textContent = '';
+        newPostIcon.style.display = 'none';
     }
 }
 
@@ -59,6 +66,22 @@ function showNewPostForm() {
 
 function hideNewPostForm() {
     document.getElementById('newPostForm').style.display = 'none';
+}
+
+async function initializeCategories() {
+    try {
+        await backend.initializeCategories();
+    } catch (error) {
+        console.error("Error initializing categories:", error);
+    }
+}
+
+async function loadCategories() {
+    try {
+        await renderCategories();
+    } catch (error) {
+        console.error("Error loading categories:", error);
+    }
 }
 
 async function renderCategories() {
@@ -89,21 +112,25 @@ async function renderCategories() {
 }
 
 async function renderPosts(categoryName) {
-    const postsContainer = document.getElementById(`posts-${categoryName}`);
-    const posts = await backend.getPosts(categoryName);
-    
-    postsContainer.innerHTML = '';
-    
-    posts.forEach(post => {
-        const postElement = document.createElement('div');
-        postElement.className = 'post';
-        postElement.innerHTML = `
-            <h4>${post.title}</h4>
-            <p>${post.content}</p>
-            <small>By ${post.author.toText().slice(0, 5)}... on ${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</small>
-        `;
-        postsContainer.appendChild(postElement);
-    });
+    try {
+        const postsContainer = document.getElementById(`posts-${categoryName}`);
+        const posts = await backend.getPosts(categoryName);
+        
+        postsContainer.innerHTML = '';
+        
+        posts.forEach(post => {
+            const postElement = document.createElement('div');
+            postElement.className = 'post';
+            postElement.innerHTML = `
+                <h4>${post.title}</h4>
+                <p>${post.content}</p>
+                <small>By ${post.author.toText().slice(0, 5)}... on ${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</small>
+            `;
+            postsContainer.appendChild(postElement);
+        });
+    } catch (error) {
+        console.error(`Error rendering posts for category ${categoryName}:`, error);
+    }
 }
 
 function setView(view) {
@@ -126,7 +153,6 @@ function setView(view) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initAuth();
-    await backend.initializeCategories();
     
     const savedView = localStorage.getItem('currentView');
     if (savedView) {
@@ -134,8 +160,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         setView('list');
     }
-    
-    await renderCategories();
 
     const newPostIcon = document.getElementById('newPostIcon');
     const newPostForm = document.getElementById('newPostForm');
@@ -162,11 +186,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const title = document.getElementById('postTitle').value;
         const content = document.getElementById('postContent').value;
 
-        await backend.addPost(categoryName, title, content);
-        await renderPosts(categoryName);
+        try {
+            await backend.addPost(categoryName, title, content);
+            await renderPosts(categoryName);
 
-        document.getElementById('postTitle').value = '';
-        document.getElementById('postContent').value = '';
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+        } catch (error) {
+            console.error("Error adding post:", error);
+            alert("Failed to add post. Please try again.");
+        }
     });
 
     listViewBtn.addEventListener('click', () => setView('list'));
